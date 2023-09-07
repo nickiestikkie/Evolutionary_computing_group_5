@@ -19,7 +19,7 @@ import glob, os
 
 
 # choose this for not using visuals and thus making experiments faster
-headless = True
+headless = False
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 

@@ -6,6 +6,10 @@
 ###############################################################################
 
 # imports framework
+
+print("hello")
+
+
 import sys
 
 from evoman.environment import Environment
