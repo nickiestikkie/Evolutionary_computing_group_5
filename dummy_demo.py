@@ -17,3 +17,25 @@ if not os.path.exists(experiment_name):
 env = Environment(experiment_name=experiment_name)
 env.play()
 
+# ----------------------------------------
+
+# choose this for not using visuals and thus making experiments faster
+headless = True
+if headless:
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+
+def main():
+    #magic numbers
+    number_of
+    
+    for generation in generations:
+        fitness= evaluate(population)
+        parents = selection #[[]]
+        Variation
+        population = survivor_selection
+        if stop_cond
+            break
+
+if __name__ == "__main__":
+    main()
