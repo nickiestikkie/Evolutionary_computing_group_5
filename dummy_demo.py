@@ -22,11 +22,6 @@ experiment_name = 'dummy_demo'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
-# initializes environment with ai player using random controller, playing against static enemy
-env = Environment(experiment_name=experiment_name)
-env.play()
-
-# ----------------------------------------
 
 # choose this for not using visuals and thus making experiments faster
 headless = True
@@ -48,6 +43,7 @@ def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
     return population
 
 def init_simulation(iNum_of_neurons):
+    global env
     env = Environment(experiment_name=experiment_name,
                   enemies=[8],
                   playermode="ai",
