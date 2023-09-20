@@ -49,6 +49,29 @@ def init_simulation(iNum_of_neurons):
                   visuals=False)
     return env
 
+def parent_selection(population):
+    # c1 =  np.random.randint(0,population.shape[0], 1)
+    # c1 =  np.random.randint(0,population.shape[0], 1)
+    # c1 =  np.random.randint(0,population.shape[0], 1)
+    # c1 =  np.random.randint(0,population.shape[0], 1)
+    # c1 =  np.random.randint(0,population.shape[0], 1)
+
+    # Generate 5 random indices for rows
+    num_samples = 5
+    random_indices = np.random.choice(population.shape[0], num_samples, replace=False)
+
+    # Select the random rows from the matrix using the random indices
+    random_rows = population[random_indices]
+
+    # Find the index of the row with the maximum value in the first column
+    max_row_index = np.argmax(random_rows[:, 0])
+
+    # Select the row with the maximum value in the first column
+    row_with_max_first_column = random_rows[max_row_index]
+
+
+    print(row_with_max_first_column)
+
 
 def main():
     #magic numbers
