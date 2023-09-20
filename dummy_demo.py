@@ -88,7 +88,7 @@ def main():
     iNum_of_neurons = 10
     iL_bound = -1
     iU_bound = 1
-    iN_generations = 10
+    iN_generations = 10 #gens
     dStop_time = 3000
 
     
@@ -101,12 +101,14 @@ def main():
         # Start timer (time in seconds)
         timer = time.time() 
 
-
-        fitness= evaluate(population)
-        parents = selection #[[]]
-        Variation
-        population = survivor_selection
-        if timer >= 100:
-            break
+        #evaluate current population
+        fitness = evaluate(population)
+        
+        parents = parent_selection(population, fitness)
+        # parents = selection #[[]]
+        # Variation
+        # population = survivor_selection
+        # if timer >= 100:
+        #     break
 if __name__ == "__main__":
     main()
