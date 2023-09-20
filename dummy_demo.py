@@ -33,6 +33,15 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+def simulation(env,x):
+    f,p,e,t = env.play(pcont=x)
+    return f
+
+
+# evaluation
+def evaluate(x):
+    return np.array(list(map(lambda y: simulation(env,y), x)))
+
 
 def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
     population = np.random.uniform(iL_bound, iU_bound, (iIndividuals, iN_vars))
@@ -79,7 +88,7 @@ def main():
     iNum_of_neurons = 10
     iL_bound = -1
     iU_bound = 1
-    iN_generations = 10
+    iN_generations = 10 #gens
     dStop_time = 3000
 
     
@@ -92,13 +101,14 @@ def main():
         # Start timer (time in seconds)
         timer = time.time() 
 
-
-        fitness= evaluate(population)
-        parents = selection #[[]]
-        Variation
-        population = survivor_selection
-        if timer >= 100:
-            break
-        if 
+        #evaluate current population
+        fitness = evaluate(population)
+        
+        parents = parent_selection(population, fitness)
+        # parents = selection #[[]]
+        # Variation
+        # population = survivor_selection
+        # if timer >= 100:
+        #     break
 if __name__ == "__main__":
     main()
