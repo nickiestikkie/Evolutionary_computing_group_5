@@ -33,6 +33,15 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+def simulation(env,x):
+    f,p,e,t = env.play(pcont=x)
+    return f
+
+
+# evaluation
+def evaluate(x):
+    return np.array(list(map(lambda y: simulation(env,y), x)))
+
 
 def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
     population = np.random.uniform(iL_bound, iU_bound, (iIndividuals, iN_vars))
@@ -76,6 +85,5 @@ def main():
         population = survivor_selection
         if timer >= 100:
             break
-        if 
 if __name__ == "__main__":
     main()
