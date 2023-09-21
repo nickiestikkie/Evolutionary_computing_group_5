@@ -55,23 +55,31 @@ def init_simulation(iNum_of_neurons):
                   visuals=False)
     return env
 
-def parent_selection(population):
+def parent_selection(pop_fitness):
     
-    # Select 5 random parents ids
-    num_parents = 5
-    random_parents_id = np.random.choice(population.shape[0], num_parents, replace=False)
+    # Select n random parents ids
+    num_parents = 6
+    random_parents_id = np.random.choice(pop_fitness.shape[0], num_parents, replace=False)
 
-    # Select the 5 according parents
-    random_parents = population[random_parents_id]
-
-    # Calculate fitness scores for each parent
-    fitness_scores = np.array([fit_pop(row) for row in random_parents])
+    # Select the n according individuals
+    random_parents = np.array(pop_fitness[random_parents_id])
+    random_parents = np.column_stack((random_parents_id, random_parents))
 
     # Find the index of the parent with the highest fitness score
-    best_parent_id = np.argmax(fitness_scores)
+    best_parent_id = np.argmax(random_parents[:,1])
+    parent_one = random_parents[best_parent_id,0]
+
+    # Create a new matrix without the best parent
+    random_parents = np.delete(random_parents, best_parent_id, axis=0)
+
+    # select the second parent
+    second_best = np.argmax(random_parents[:,1])
+    second_parent = random_parents[second_best,0]
 
     # Select the row with the maximum value in the first column
-    return random_parents[best_parent_id]
+    return parent_one, second_parent
+
+
 
 
 def print_generational_gain(history):
