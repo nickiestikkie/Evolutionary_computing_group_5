@@ -160,19 +160,6 @@ def print_generational_gain(history):
 
 
 
-def variation(parent1, parent2):
-    iN = len(parent1)
-    crossover_point = random.randint(0,iN)
-    print(crossover_point)
-
-    ch1 = parent1[:crossover_point] + parent2[crossover_point:]
-    ch2 = parent1[crossover_point:] + parent2[:crossover_point]
-
-    return ch1,ch2
-
-
-
-
 def main():
     #magic numbers
     iNum_of_individuals = 100
