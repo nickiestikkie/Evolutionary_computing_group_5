@@ -15,6 +15,7 @@ import time
 import numpy as np
 from math import sqrt
 import random
+import matplotlib.pyplot as plt
 
 
 
@@ -22,16 +23,20 @@ experiment_name = 'dummy_demo'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
-# initializes environment with ai player using random controller, playing against static enemy
-env = Environment(experiment_name=experiment_name)
-env.play()
-
-# ----------------------------------------
 
 # choose this for not using visuals and thus making experiments faster
 headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+def simulation(env,x):
+    f,p,e,t = env.play(pcont=x)
+    return f
+
+
+# evaluation
+def evaluate(x):
+    return np.array(list(map(lambda y: simulation(env,y), x)))
 
 
 def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
@@ -39,6 +44,7 @@ def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
     return population
 
 def init_simulation(iNum_of_neurons):
+    global env
     env = Environment(experiment_name=experiment_name,
                   enemies=[8],
                   playermode="ai",
@@ -49,28 +55,70 @@ def init_simulation(iNum_of_neurons):
                   visuals=False)
     return env
 
-def parent_selection(population):
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
+def parent_selection(pop_fitness):
+    
+    # Select n random parents ids
+    num_parents = 6
+    random_parents_id = np.random.choice(pop_fitness.shape[0], num_parents, replace=False)
 
-    # Generate 5 random indices for rows
-    num_samples = 5
-    random_indices = np.random.choice(population.shape[0], num_samples, replace=False)
+    # Select the n according individuals
+    random_parents = np.array(pop_fitness[random_parents_id])
+    random_parents = np.column_stack((random_parents_id, random_parents))
 
-    # Select the random rows from the matrix using the random indices
-    random_rows = population[random_indices]
+    # Find the index of the parent with the highest fitness score
+    best_parent_id = np.argmax(random_parents[:,1])
+    parent_one = random_parents[best_parent_id,0]
 
-    # Find the index of the row with the maximum value in the first column
-    max_row_index = np.argmax(random_rows[:, 0])
+    # Create a new matrix without the best parent
+    random_parents = np.delete(random_parents, best_parent_id, axis=0)
+
+    # select the second parent
+    second_best = np.argmax(random_parents[:,1])
+    second_parent = random_parents[second_best,0]
 
     # Select the row with the maximum value in the first column
-    row_with_max_first_column = random_rows[max_row_index]
+    return parent_one, second_parent
 
 
-    print(row_with_max_first_column)
+
+
+def print_generational_gain(history):
+    ''' 
+    Purpose: shows a line diagram of the average fitness gain over generations 
+
+    Input: history = matrix generation with average fitness
+    
+    Print statement: Linediagram 
+    '''
+    x = history[0] #generation number
+    y = history[1] #average fitness
+
+    plt.plot(x,y, "line")
+    plt.xlabel("Generation")
+    plt.ylabel("Average Fitness")
+    plt.title("Average fitness per generation")
+
+    
+
+
+def print_generational_gain(history):
+    ''' 
+    Purpose: shows a line diagram of the average fitness gain over generations 
+
+    Input: history = matrix generation with average fitness
+    
+    Print statement: Linediagram 
+    '''
+    x = history[0] #generation number
+    y = history[1] #average fitness
+
+    plt.plot(x,y, "line")
+    plt.xlabel("Generation")
+    plt.ylabel("Average Fitness")
+    plt.title("Average fitness per generation")
+
+    
+
 
 
 def main():
@@ -81,6 +129,8 @@ def main():
     iU_bound = 1
     iN_generations = 10
     dStop_time = 3000
+    mHistory = list()
+
 
     
     env = init_simulation(iNum_of_neurons)
@@ -92,13 +142,25 @@ def main():
         # Start timer (time in seconds)
         timer = time.time() 
 
+        #evaluate current population
+        fitness = evaluate(population)
+        dAverage_fitness = sum(fitness)/len(fitness)
+        mHistory.append([i, dAverage_fitness])
 
-        fitness= evaluate(population)
-        parents = selection #[[]]
-        Variation
-        population = survivor_selection
+
+        # parents = parent_selection(fitness)
+        # parents = selection #[[]]
+        # Variation
+        # population = survivor_selection
+
+       
+
         if timer >= 100:
-            break
-        if 
+            # log(results)
+            print("Time is up")
+            quit()
+
+
+    print_generational_gain(mHistory)
 if __name__ == "__main__":
     main()
