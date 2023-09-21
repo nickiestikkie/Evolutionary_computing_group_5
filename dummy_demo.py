@@ -106,7 +106,7 @@ def main():
     iU_bound = 1
     iN_generations = 10
     dStop_time = 3000
-    mHistory = list()
+    mHistory = list() #becomes a list of lists
 
 
     
@@ -123,6 +123,8 @@ def main():
         fitness = evaluate(population)
         dAverage_fitness = sum(fitness)/len(fitness)
         mHistory.append([i, dAverage_fitness])
+
+
 
 
         # parents = parent_selection(fitness)
