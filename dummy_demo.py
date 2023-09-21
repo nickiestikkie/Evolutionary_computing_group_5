@@ -59,27 +59,23 @@ def init_simulation(iNum_of_neurons):
     return env
 
 def parent_selection(population):
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
-    # c1 =  np.random.randint(0,population.shape[0], 1)
+    
+    # Select 5 random parents ids
+    num_parents = 5
+    random_parents_id = np.random.choice(population.shape[0], num_parents, replace=False)
 
-    # Generate 5 random indices for rows
-    num_samples = 5
-    random_indices = np.random.choice(population.shape[0], num_samples, replace=False)
+    # Select the 5 according parents
+    random_parents = population[random_parents_id]
 
-    # Select the random rows from the matrix using the random indices
-    random_rows = population[random_indices]
+    # Calculate fitness scores for each parent
+    fitness_scores = np.array([fit_pop(row) for row in random_parents])
 
-    # Find the index of the row with the maximum value in the first column
-    max_row_index = np.argmax(random_rows[:, 0])
+    # Find the index of the parent with the highest fitness score
+    best_parent_id = np.argmax(fitness_scores)
 
     # Select the row with the maximum value in the first column
-    row_with_max_first_column = random_rows[max_row_index]
+    return random_parents[best_parent_id]
 
-
-    print(row_with_max_first_column)
 
 
 def main():
