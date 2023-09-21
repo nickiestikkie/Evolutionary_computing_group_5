@@ -55,11 +55,11 @@ def init_simulation(iNum_of_neurons):
                   visuals=False)
     return env
 
-def parent_selection(pop_fitness):
+def parent_selection(pop_fitness, iNum_of_parents= 6):
     
     # Select n random parents ids
-    num_parents = 6
-    random_parents_id = np.random.choice(pop_fitness.shape[0], num_parents, replace=False)
+
+    random_parents_id = np.random.choice(pop_fitness.shape[0], iNum_of_parents, replace=False)
 
     # Select the n according individuals
     random_parents = np.array(pop_fitness[random_parents_id])
@@ -77,7 +77,7 @@ def parent_selection(pop_fitness):
     second_parent = random_parents[second_best,0]
 
     # Select the row with the maximum value in the first column
-    return parent_one, second_parent
+    return int(parent_one), int(second_parent)
 
 
 
@@ -98,8 +98,46 @@ def print_generational_gain(history):
     plt.ylabel("Average Fitness")
     plt.title("Average fitness per generation")
 
-    
 
+def crossover(pop, fixed_start=True, fixed_end=True, n_vars = None, n_offspring=2, p_left=0.5, p_mutation = 0.2):
+    
+    total_offspring = np.zeros((0,n_vars))
+    
+    for p in range(0, pop.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
+        parents = np.zeros((2, pop.shape[1]))
+        parents[0],parents[1] = parent_selection(pop)
+        
+        offspring = np.zeros((n_offspring, n_vars))
+        
+        index_list = np.arange(0, len(parents[0])).tolist() #create a list of index to sample from
+    
+        if fixed_start:
+            index_list.remove(0) #Remove the first index 0 from the list
+    
+        if fixed_end:
+            index_list.remove(len(parents[0])-1) #Remove the last index from the list
+        
+        #Sample one integers from the index list
+        a = random.choice(index_list)
+             
+        for c in range(len(offspring)):
+            if np.random.uniform() <= p_left:  # recombine left part
+                offspring[c, a:] = parents[c, a:]
+                offspring[c, :a] = (parents[0, :a] + parents[1, :a]) / 2
+
+            else:  # recombine right part
+                offspring[c, :a] = parents[c, :a]
+                offspring[c, a:] = (parents[c, a:] + parents[1, a:]) / 2
+                
+            # mutation 
+            for i in range(len(offspring[c])):
+                if np.random.uniform(0,1) <= p_mutation:
+                    offspring[c, i] = np.random.uniform(-1, 1)
+            
+            total_offspring = np.vstack((total_offspring, offspring[c]))
+     
+    return total_offspring
+        
 
 def print_generational_gain(history):
     ''' 
@@ -109,15 +147,29 @@ def print_generational_gain(history):
     
     Print statement: Linediagram 
     '''
-    x = history[0] #generation number
-    y = history[1] #average fitness
+    
+    for row in history:
+        x = [el[0] for el in history]#generation number
+        y = [el[1] for el in history] #average fitness
+        plt.plot(x,y)
 
-    plt.plot(x,y, "line")
     plt.xlabel("Generation")
     plt.ylabel("Average Fitness")
     plt.title("Average fitness per generation")
+    plt.show()
 
-    
+
+
+def variation(parent1, parent2):
+    iN = len(parent1)
+    crossover_point = random.randint(0,iN)
+    print(crossover_point)
+
+    ch1 = parent1[:crossover_point] + parent2[crossover_point:]
+    ch2 = parent1[crossover_point:] + parent2[:crossover_point]
+
+    return ch1,ch2
+
 
 
 
@@ -127,9 +179,10 @@ def main():
     iNum_of_neurons = 10
     iL_bound = -1
     iU_bound = 1
-    iN_generations = 10
+    iN_generations = 3
     dStop_time = 3000
-    mHistory = list() #becomes a list of lists
+    mHistory = [] #becomes a list of lists
+    np.random.seed(1234)
 
 
     
@@ -137,32 +190,28 @@ def main():
     iNum_of_vars = (env.get_num_sensors()+1)*iNum_of_neurons + (iNum_of_neurons+1)*5 #is this general?
     population = init_population(iNum_of_individuals, iNum_of_vars, iL_bound, iU_bound)
 
-    
+    timer = time.time() 
     for i in range(iN_generations):
         # Start timer (time in seconds)
-        timer = time.time() 
-
+        
+        # print(i)
         #evaluate current population
         fitness = evaluate(population)
         dAverage_fitness = sum(fitness)/len(fitness)
         mHistory.append([i, dAverage_fitness])
-
-
-
-
-        # parents = parent_selection(fitness)
-        # parents = selection #[[]]
+        population = crossover(population,n_vars=iNum_of_vars)
         # Variation
         # population = survivor_selection
 
        
 
-        if timer >= 100:
-            # log(results)
-            print("Time is up")
-            quit()
+        # if timer >= 1000:
+        #     # log(results)
+        #     print("Time is up")
+        #     break
 
 
     print_generational_gain(mHistory)
+    quit()
 if __name__ == "__main__":
     main()
