@@ -99,13 +99,13 @@ def print_generational_gain(history):
     plt.title("Average fitness per generation")
 
 
-def crossover(pop, fixed_start=True, fixed_end=True, n_vars = None, n_offspring=2, p_left=0.5, p_mutation = 0.2):
+def crossover(pop, fixed_start=True, fixed_end=True, n_vars = None, n_offspring=2, p_left=0.5, p_mutation = 0.2, fitness=None):
     
     total_offspring = np.zeros((0,n_vars))
     
     for p in range(0, pop.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
         parents = np.zeros((2, pop.shape[1]))
-        parents[0],parents[1] = parent_selection(pop)
+        parents[0],parents[1] = parent_selection(fitness)
         
         offspring = np.zeros((n_offspring, n_vars))
         
@@ -166,10 +166,10 @@ def main():
     iNum_of_neurons = 10
     iL_bound = -1
     iU_bound = 1
-    iN_generations = 3
+    iN_generations = 2
     dStop_time = 3000
     mHistory = [] #becomes a list of lists
-    np.random.seed(1234)
+    # np.random.seed(1234)
 
 
     
@@ -186,7 +186,7 @@ def main():
         fitness = evaluate(population)
         dAverage_fitness = sum(fitness)/len(fitness)
         mHistory.append([i, dAverage_fitness])
-        population = crossover(population,n_vars=iNum_of_vars)
+        population = crossover(population,n_vars=iNum_of_vars, fitness= fitness)
         # Variation
         # population = survivor_selection
 
