@@ -15,6 +15,7 @@ import time
 import numpy as np
 from math import sqrt
 import random
+import matplotlib.pyplot as plt
 
 
 
@@ -77,6 +78,25 @@ def parent_selection(population):
 
     print(row_with_max_first_column)
 
+def print_generational_gain(history):
+    ''' 
+    Purpose: shows a line diagram of the average fitness gain over generations 
+
+    Input: history = matrix generation with average fitness
+    
+    Print statement: Linediagram 
+    '''
+    x = history[0] #generation number
+    y = history[1] #average fitness
+
+    plt.plot(x,y, "line")
+    plt.xlabel("Generation")
+    plt.ylabel("Average Fitness")
+    plt.title("Average fitness per generation")
+
+    
+
+
 
 def main():
     #magic numbers
@@ -84,8 +104,10 @@ def main():
     iNum_of_neurons = 10
     iL_bound = -1
     iU_bound = 1
-    iN_generations = 10 #gens
+    iN_generations = 10
     dStop_time = 3000
+    mHistory = list()
+
 
     
     env = init_simulation(iNum_of_neurons)
@@ -99,12 +121,23 @@ def main():
 
         #evaluate current population
         fitness = evaluate(population)
-        
-        parents = parent_selection(population, fitness)
+        dAverage_fitness = sum(fitness)/len(fitness)
+        mHistory.append([i, dAverage_fitness])
+
+
+        # parents = parent_selection(fitness)
         # parents = selection #[[]]
         # Variation
         # population = survivor_selection
-        # if timer >= 100:
-        #     break
+
+       
+
+        if timer >= 100:
+            # log(results)
+            print("Time is up")
+            quit()
+
+
+    print_generational_gain(mHistory)
 if __name__ == "__main__":
     main()
