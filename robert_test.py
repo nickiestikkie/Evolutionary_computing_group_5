@@ -17,17 +17,14 @@ from math import sqrt
 import random
 import matplotlib.pyplot as plt
 
-
-
-experiment_name = 'freek_test'
-if not os.path.exists(experiment_name):
-    os.makedirs(experiment_name)
-
-
 # choose this for not using visuals and thus making experiments faster
 headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+experiment_name = 'dummy_demo_1'
+if not os.path.exists(experiment_name):
+    os.makedirs(experiment_name)
 
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
@@ -38,6 +35,7 @@ def simulation(env,x):
 def evaluate(x):
     fitness = np.array(list(map(lambda y: simulation(env,y)[0], x)))
     enemy_life = np.array(list(map(lambda y: simulation(env,y)[1], x)))
+    
     return fitness, enemy_life
 
 
@@ -48,40 +46,23 @@ def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
 def init_simulation(iNum_of_neurons):
     global env
     env = Environment(experiment_name=experiment_name,
-                  enemies=[8],
-                  playermode="ai",
-                  player_controller=player_controller(iNum_of_neurons),
-                  enemymode="static",
-                  level=2,
-                  speed="fastest",
-                  visuals=False)
+                      enemies=[1],
+                      multiplemode='no',
+                      playermode="ai",
+                      player_controller=player_controller(iNum_of_neurons),
+                      enemymode="static",
+                      level=2,
+                      speed="fastest",
+                      visuals=False)
     return env
 
-def parent_selection(pop, iNum_of_parents=6):
+def parent_selection(pop, iNum_of_parents=10):
     
     random_parents = pop[np.random.choice(pop.shape[0], iNum_of_parents, replace=False)]
     random_parents_fitness = evaluate(random_parents)[0]
     best_parent = np.where(random_parents_fitness == np.max(random_parents_fitness))
 
     return random_parents[best_parent[0][0]]
-
-
-def print_generational_gain(history):
-    ''' 
-    Purpose: shows a line diagram of the average fitness gain over generations 
-
-    Input: history = matrix generation with average fitness
-    
-    Print statement: Linediagram 
-    '''
-    x = history[0] #generation number
-    y = history[1] #average fitness
-
-    plt.plot(x,y, "line")
-    plt.xlabel("Generation")
-    plt.ylabel("Average Fitness")
-    plt.title("Average fitness per generation")
-
 
 def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation = 0.2):
     n_vars = pop[0].shape[0]
@@ -133,8 +114,8 @@ def print_generational_gain(history):
     '''
     
     for row in history:
-        x = [el[0] for el in history]#generation number
-        y = [el[1] for el in history] #average fitness
+        x = [el[0] for el in history] # generation number
+        y = [el[1] for el in history] # average fitness
         plt.plot(x,y)
 
     plt.xlabel("Generation")
@@ -158,34 +139,35 @@ def main():
     env = init_simulation(hidden_neurons)
     number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
     population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
-
+    
     # saves results for first pop
     file_aux  = open(experiment_name+'/results.txt','a')
-    file_aux.write('\n\ngen enemy_life best mean std')
+    file_aux.write('\n\ngen best mean std')
 
     timer = time.time() # Start timer (time in seconds)
     for i in range(generations):
-        # create new generation
-        population = crossover(population)   
-         
+        
+        # create new gen
+        population = crossover(population) 
+        
         # evaluate current population
         fitness = evaluate(population)[0]
         enemy_life = np.min(evaluate(population)[1])
-                
+        
         mean_fitness = np.mean(fitness)
         best_fitness = np.argmax(fitness)
         std_fitness = np.std(fitness)
         
-        dAverage_fitness = sum(fitness)/len(fitness)
-        
-        mHistory.append([i, dAverage_fitness])
+        mHistory.append([i, mean_fitness])
         
          # saves results
         file_aux  = open(experiment_name+'/results.txt','a')
-        print( '\n GENERATION '+str(i)+' '+str(round(enemy_life,6))+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
-        file_aux.write('\n'+str(i)+' '+str(round(enemy_life,6))+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
+        print( '\n GENERATION '+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
+        file_aux.write('\n'+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
         file_aux.close()
-           
+
+        print(f'enemy life = {enemy_life}')
+            
 
     print_generational_gain(mHistory)
     quit()
