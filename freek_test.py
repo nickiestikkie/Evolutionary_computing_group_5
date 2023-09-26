@@ -28,14 +28,12 @@ if not os.path.exists(experiment_name):
 
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
-    return f, e
+    return f, p, e, t
 
 
 # evaluation
 def evaluate(x):
-    fitness = np.array(list(map(lambda y: simulation(env,y)[0], x)))
-    enemy_life = np.array(list(map(lambda y: simulation(env,y)[1], x)))
-    
+    fitness, person_life, enemy_life, time = np.array(list(map(lambda y: simulation(env,y), x)))
     return fitness, enemy_life
 
 
