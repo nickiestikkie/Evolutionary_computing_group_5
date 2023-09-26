@@ -88,7 +88,6 @@ def survivor_selection(current_pop, total_offspring, p_new=0.3):
 
     # Combine the selected individuals from both the current population and the offspring
     new_population = np.concatenate((individuals_to_keep, new_individuals), axis=0)
-
     return new_population
 
 def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float):
