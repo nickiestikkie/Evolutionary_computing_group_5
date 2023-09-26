@@ -6,6 +6,7 @@
 ###############################################################################
 
 # imports framework
+
 import sys
 
 from evoman.environment import Environment
