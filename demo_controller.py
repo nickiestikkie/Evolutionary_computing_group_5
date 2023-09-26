@@ -89,7 +89,7 @@ class enemy_controller(Controller):
 		# Number of hidden neurons
 		self.n_hidden = [_n_hidden]
 
-	def control(self, inputs,controller):
+	def control(self, inputs, controller):
 		# Normalises the input using min-max scaling
 		inputs = (inputs-min(inputs))/float((max(inputs)-min(inputs)))
 
