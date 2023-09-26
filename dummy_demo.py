@@ -55,6 +55,7 @@ def init_simulation(iNum_of_neurons):
                   visuals=False)
     return env
 
+
 def parent_selection(pop_fitness, iNum_of_parents= 6):
     
     # Select n random parents ids
