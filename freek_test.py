@@ -22,7 +22,8 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'dummy_demo_1'
+experiment_name = 'Steady State parameter tuning Initial mutation rate'
+
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -90,14 +91,14 @@ def survivor_selection(current_pop, total_offspring, p_new=0.3):
     new_population = np.concatenate((individuals_to_keep, new_individuals), axis=0)
     return new_population
 
-def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float):
+def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float, p_new=0.3,num_parents=8):
     n_vars = pop[0].shape[0]
     total_offspring = np.zeros((0,n_vars))
     
     for p in range(0, pop.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
         parents = np.zeros((2, pop.shape[1]))
-        parents[0] = parent_selection(pop)
-        parents[1] = parent_selection(pop)
+        parents[0] = parent_selection(pop,num_parents=num_parents)
+        parents[1] = parent_selection(pop,num_parents=num_parents)
         
         offspring = np.zeros((n_offspring, n_vars))
         
@@ -129,7 +130,7 @@ def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, 
             total_offspring = np.vstack((total_offspring, offspring[c]))
 
     # return total_offspring
-    return survivor_selection(pop, total_offspring)
+    return survivor_selection(pop, total_offspring,p_new=p_new)
 
 def print_generational_gain(history):
     ''' 
@@ -164,6 +165,10 @@ def main():
 
     initial_mutation_rate = 5
     final_mutation_rate = 0.001
+    p_mutation = 0.1
+    num_parents = 8
+    p_new = 0.3
+
     mutation_rates = initial_mutation_rate * np.exp(np.linspace(0, np.log(final_mutation_rate / initial_mutation_rate), generations))
     np.random.seed(1234)
 
@@ -173,13 +178,14 @@ def main():
     
     # saves results for first pop
     file_aux  = open(experiment_name+'/results.txt','a')
-    file_aux.write('\n\ngen best mean std')
+    file_aux.write(f'These are the parameter for this input: \n init_mut_rate:{initial_mutation_rate} \n fin_mut_rate:{final_mutation_rate},\n p_mut: {p_mutation}\n num_parents: {num_parents}\n p_new: {p_new}')
+    file_aux.write('\ngen best mean std')
 
     timer = time.time() # Start timer (time in seconds)
     for i in range(generations):
         
         # create new gen
-        population = crossover(population, mutation_rate=mutation_rates[i])
+        population = crossover(population, mutation_rate=mutation_rates[i], p_mutation=p_mutation, p_new=p_new, num_parents=num_parents)
         
         # evaluate current population
         fitness = evaluate(population)[0]

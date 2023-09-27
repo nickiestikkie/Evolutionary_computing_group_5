@@ -755,4 +755,17 @@ gen best mean std
 26 95.030187 95.025241 0.009122
 27 95.030187 95.027511 0.00755
 28 95.030187 95.028473 0.00645
-29 95.030187 95.030187 0.0
+29 95.030187 95.030187 0.0These are the parameter for this input: 
+ init_mut_rate:5 
+ fin_mut_rate:0.001,
+ p_mut: 0.1
+ num_parents: 8
+ p_new: 0.3
+ gen best mean stdThese are the parameter for this input: 
+ init_mut_rate:5 
+ fin_mut_rate:0.001,
+ p_mut: 0.1
+ num_parents: 8
+ p_new: 0.3
+ gen best mean std
+0 48.013548 3.973689 15.130901

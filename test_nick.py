@@ -22,7 +22,8 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'dummy_demo_1'
+experiment_name = 'Steady State parameter tuning Initial mutation rate'
+
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -107,7 +108,8 @@ def survivor_selection(current_pop, total_offspring, fitness, enemy_life, p_new=
     
     return new_population, fitness, enemy_life
 
-def crossover(population, fitness, enemy_life, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float, generational_model=bool):
+
+def crossover(population, fitness, enemy_life, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float, generational_model=bool, p_new=float, num_parents=8):
     # If generational_model = True, the generational model is used
     # If generational_model = False, the steady-state model is used
     n_vars = population[0].shape[0]
@@ -115,8 +117,8 @@ def crossover(population, fitness, enemy_life, fixed_start=True, fixed_end=True,
     
     for p in range(0, population.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
         parents = np.zeros((2, population.shape[1]))
-        parents[0] = parent_selection(population, fitness)
-        parents[1] = parent_selection(population, fitness)
+        parents[0] = parent_selection(population, fitness,num_parents=num_parents)
+        parents[1] = parent_selection(population, fitness,num_parents=num_parents)
         
         offspring = np.zeros((n_offspring, n_vars))
         
@@ -151,7 +153,7 @@ def crossover(population, fitness, enemy_life, fixed_start=True, fixed_end=True,
         fitness, enemy_life = evaluate(total_offspring)
         return total_offspring, fitness, enemy_life
     else:
-        return survivor_selection(population, total_offspring, fitness, enemy_life)
+        return survivor_selection(population, total_offspring, fitness, enemy_life, p_new=p_new)
 
 def print_generational_gain(history):
     ''' 
@@ -172,6 +174,53 @@ def print_generational_gain(history):
     plt.title("Average fitness per generation")
     plt.show()
 
+def a( individuals = 100, hidden_neurons = 10,lower_bound = -1    ,upper_bound = 1    ,generations = 30    ,stop_time = 3000 ,initial_mutation_rate = 5   ,final_mutation_rate = 0.001,p_mutation = 0.1,num_parents = 8 ,p_new = 0.3, generational_model = False):
+    mHistory = []
+    mutation_rates = initial_mutation_rate * np.exp(np.linspace(0, np.log(final_mutation_rate / initial_mutation_rate), generations))
+
+
+    np.random.seed(1234)
+
+    env = init_simulation(hidden_neurons)
+    number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
+    population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
+    fitness, enemy_life = evaluate(population)
+    
+    # saves results for first population
+    file_aux  = open(experiment_name+'/results.txt','a')
+    file_aux.write(f'\n\nThese are the parameter for this input: \n init_mut_rate:{initial_mutation_rate} \n fin_mut_rate:{final_mutation_rate},\n p_mut: {p_mutation}\n num_parents: {num_parents}\n p_new: {p_new}')
+    file_aux.write('\n gen best mean std')
+
+    start_time = time.time() # Start timer (time in seconds)
+    for i in range(generations):
+        # create new gen
+
+        population, fitness, enemy_life = crossover(population, fitness, enemy_life,mutation_rate=mutation_rates[i], generational_model=generational_model, p_mutation=p_mutation, p_new=p_new, num_parents=num_parents)
+        
+        mean_fitness = np.mean(fitness)
+        best_fitness = np.argmax(fitness)
+        std_fitness = np.std(fitness)
+        
+        mHistory.append([i, mean_fitness])
+
+        # saves results
+        file_aux  = open(experiment_name+'/results.txt','a')
+        print( '\n GENERATION '+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
+        print(f'time: {time.time()-start_time}')
+        file_aux.write('\n'+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
+        file_aux.close()
+
+        print(f'enemy life = {np.min(enemy_life)}')
+
+        if time.time()-start_time >= stop_time:
+            print(f'5 minute stop condition')
+            break
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(elapsed_time)
+
+
+
 def main():
     # magic numbers
     generational_model = False # if generational_model = False, the steady-state model is applied
@@ -185,41 +234,39 @@ def main():
 
     initial_mutation_rate = 5
     final_mutation_rate = 0.001
-    mutation_rates = initial_mutation_rate * np.exp(np.linspace(0, np.log(final_mutation_rate / initial_mutation_rate), generations))
-    np.random.seed(1234)
+    p_mutation = 0.1
+    num_parents = 8
+    p_new = 0.3
 
-    env = init_simulation(hidden_neurons)
-    number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
-    population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
-    fitness, enemy_life = evaluate(population)
+    initial_mutation_rate  = [10, 7.5, 5, 2.5, 1] 
+    for el in initial_mutation_rate:
+        a(initial_mutation_rate=el)
+    initial_mutation_rate = 5
+
+    final_mutation_rate =  [0.05, 0.04, 0.03, 0.02, 0.01]
+
+    for el in final_mutation_rate:
+        a(final_mutation_rate=el)
+    final_mutation_rate=0.001
+
+    p_mutation =  [0.01, 0.05, 0.10, 0.15, 0.20]
+
+    for el in p_mutation:
+        a(p_mutation=el)
+    p_mutation = 0.1
+
+    num_parents = [5, 6, 7, 8, 9, 10]
+    for el in num_parents:
+        a(num_parents=el)
+    num_parents = 8
+
+    p_new = [0.1, 0.2, 0.3, 0.4, 0.5]    
+    for el in p_new:
+        a(p_new=el)
+            
+  
     
-    # saves results for first population
-    file_aux  = open(experiment_name+'/results.txt','a')
-    file_aux.write('\n\ngen best mean std')
-
-    start_time = time.time() # Start timer (time in seconds)
-    for i in range(generations):
-        # create new gen
-        population, fitness, enemy_life = crossover(population, fitness, enemy_life, mutation_rate=mutation_rates[i], generational_model=generational_model) 
-        
-        mean_fitness = np.mean(fitness)
-        best_fitness = np.argmax(fitness)
-        std_fitness = np.std(fitness)
-        
-        mHistory.append([i, mean_fitness])
-
-        # saves results
-        file_aux  = open(experiment_name+'/results.txt','a')
-        print( '\n GENERATION '+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
-        file_aux.write('\n'+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
-        file_aux.close()
-
-        print(f'enemy life = {np.min(enemy_life)}')
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(elapsed_time)
-
-    print_generational_gain(mHistory)
-    quit()
+   
+    # print_generational_gain(mHistory)
 if __name__ == "__main__":
     main()
