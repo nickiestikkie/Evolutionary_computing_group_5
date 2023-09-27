@@ -28,17 +28,26 @@ if not os.path.exists(experiment_name):
 
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
-    return f, p, e, t
+    return f, e
 
 
 # evaluation
 def evaluate(x):
-    fitness, person_life, enemy_life, time = np.array(list(map(lambda y: simulation(env,y), x)))
+    # Create a matrix to store simulation results
+    matrix = np.array(list(map(lambda y: simulation(env,y), x)))
+
+    # Extract fitness values from the matrix (first column)
+    fitness = np.array([sublist[0] for sublist in matrix])
+    
+    # Extract enemy life values from the matrix (second column)
+    enemy_life = np.array([sublist[1] for sublist in matrix])
     return fitness, enemy_life
 
 
-def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
-    population = np.random.uniform(iL_bound, iU_bound, (iIndividuals, iN_vars))
+def init_population(individuals, number_of_weights, lower_bound, upper_bound):
+    # Each row represents an individual and contains 'number_of_weights' random values
+    # These random values are uniformly distributed between 'lower_bound' and 'upper_bound'
+    population = np.random.uniform(lower_bound, upper_bound, (individuals, number_of_weights))
     return population
 
 def init_simulation(iNum_of_neurons):
@@ -54,25 +63,25 @@ def init_simulation(iNum_of_neurons):
                       visuals=False)
     return env
 
-def parent_selection(population, num_parents=8):
+def parent_selection(population, fitness, num_parents=8):
     # Randomly select 'num_parents' individuals from the population
-    random_parents = population[np.random.choice(population.shape[0], num_parents, replace=False)]
-    
-    # Evaluate the fitness of the randomly selected parents
-    random_parents_fitness = evaluate(random_parents)[0]
+    random_parents = np.random.choice(population.shape[0], num_parents, replace=False)
+
+    # Retrieve the fitness scores of the randomly selected parents
+    random_parents_fitness = fitness[random_parents]
     
     # Find the index of the best parent (individual with the highest fitness)
     best_parent_index = np.argmax(random_parents_fitness)
     
     # Get the best parent based on its index
-    best_parent = random_parents[best_parent_index]
+    best_parent = population[random_parents[best_parent_index]]
 
     return best_parent
 
-def survivor_selection(current_pop, total_offspring, p_new=0.3):
+def survivor_selection(current_pop, total_offspring, fitness, enemy_life, p_new=0.3):
     # Evaluate fitness
-    current_population_fitness = evaluate(current_pop)[0]
-    offspring_fitness = evaluate(total_offspring)[0]
+    current_population_fitness = fitness
+    offspring_fitness, offspring_enemy_life = evaluate(total_offspring)
     
     # Sort the current population and offspring based on fitness in descending order
     current_population_sorted_indices = np.argsort(current_population_fitness)[::-1]
@@ -84,20 +93,30 @@ def survivor_selection(current_pop, total_offspring, p_new=0.3):
     
     # Select the top individuals from the current population and the offspring
     individuals_to_keep = current_pop[current_population_sorted_indices][:num_to_keep]
+    fitness_individuals_to_keep = current_population_fitness[current_population_sorted_indices][:num_to_keep]
+    enemy_life_individuals_to_keep = enemy_life[current_population_sorted_indices][:num_to_keep]
+
     new_individuals = total_offspring[offspring_sorted_indices][:num_to_introduce]
+    fitnes_new_individuals = offspring_fitness[offspring_sorted_indices][:num_to_introduce]
+    enemy_life_new_individuals = offspring_enemy_life[offspring_sorted_indices][:num_to_introduce]
 
     # Combine the selected individuals from both the current population and the offspring
     new_population = np.concatenate((individuals_to_keep, new_individuals), axis=0)
-    return new_population
+    fitness = np.concatenate((fitness_individuals_to_keep, fitnes_new_individuals), axis=0)
+    enemy_life = np.concatenate((enemy_life_individuals_to_keep, enemy_life_new_individuals), axis=0)
+    
+    return new_population, fitness, enemy_life
 
-def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float):
-    n_vars = pop[0].shape[0]
+def crossover(population, fitness, enemy_life, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float, generational_model=bool):
+    # If generational_model = True, the generational model is used
+    # If generational_model = False, the steady-state model is used
+    n_vars = population[0].shape[0]
     total_offspring = np.zeros((0,n_vars))
     
-    for p in range(0, pop.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
-        parents = np.zeros((2, pop.shape[1]))
-        parents[0] = parent_selection(pop)
-        parents[1] = parent_selection(pop)
+    for p in range(0, population.shape[0], 2):  # stepsize 2, since you choose 2 parents and otherwise you get 2 times the number of offspring
+        parents = np.zeros((2, population.shape[1]))
+        parents[0] = parent_selection(population, fitness)
+        parents[1] = parent_selection(population, fitness)
         
         offspring = np.zeros((n_offspring, n_vars))
         
@@ -128,8 +147,11 @@ def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, 
             
             total_offspring = np.vstack((total_offspring, offspring[c]))
 
-    # return total_offspring
-    return survivor_selection(pop, total_offspring)
+    if generational_model == True:
+        fitness, enemy_life = evaluate(total_offspring)
+        return total_offspring, fitness, enemy_life
+    else:
+        return survivor_selection(population, total_offspring, fitness, enemy_life)
 
 def print_generational_gain(history):
     ''' 
@@ -150,10 +172,9 @@ def print_generational_gain(history):
     plt.title("Average fitness per generation")
     plt.show()
 
-
-
 def main():
-    #magic numbers
+    # magic numbers
+    generational_model = False # if generational_model = False, the steady-state model is applied
     individuals = 100
     hidden_neurons = 10
     lower_bound = -1
@@ -170,20 +191,16 @@ def main():
     env = init_simulation(hidden_neurons)
     number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
     population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
+    fitness, enemy_life = evaluate(population)
     
-    # saves results for first pop
+    # saves results for first population
     file_aux  = open(experiment_name+'/results.txt','a')
     file_aux.write('\n\ngen best mean std')
 
-    timer = time.time() # Start timer (time in seconds)
+    start_time = time.time() # Start timer (time in seconds)
     for i in range(generations):
-        
         # create new gen
-        population = crossover(population, mutation_rate=mutation_rates[i])
-        
-        # evaluate current population
-        fitness = evaluate(population)[0]
-        enemy_life = np.min(evaluate(population)[1])
+        population, fitness, enemy_life = crossover(population, fitness, enemy_life, mutation_rate=mutation_rates[i], generational_model=generational_model) 
         
         mean_fitness = np.mean(fitness)
         best_fitness = np.argmax(fitness)
@@ -194,13 +211,19 @@ def main():
         # saves results
         file_aux  = open(experiment_name+'/results.txt','a')
         print( '\n GENERATION '+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
+        print(f'time: {time.time()-start_time}')
         file_aux.write('\n'+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
         file_aux.close()
 
-        print(f'enemy life = {enemy_life}')   
+        print(f'enemy life = {np.min(enemy_life)}')
+
+        if time.time()-start_time >= stop_time:
+            print(f'5 minute stop condition')
+            break
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(elapsed_time)
 
     print_generational_gain(mHistory)
-
-
 if __name__ == "__main__":
     main()
