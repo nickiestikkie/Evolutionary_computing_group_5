@@ -28,14 +28,22 @@ if not os.path.exists(experiment_name):
 
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
+<<<<<<< HEAD
     return f, e
+=======
+    return f, p, e, t
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
 
 
 # evaluation
 def evaluate(x):
+<<<<<<< HEAD
     fitness = np.array(list(map(lambda y: simulation(env,y)[0], x)))
     enemy_life = np.array(list(map(lambda y: simulation(env,y)[1], x)))
     
+=======
+    fitness, person_life, enemy_life, time = np.array(list(map(lambda y: simulation(env,y), x)))
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
     return fitness, enemy_life
 
 
@@ -46,7 +54,11 @@ def init_population(iIndividuals, iN_vars, iL_bound, iU_bound):
 def init_simulation(iNum_of_neurons):
     global env
     env = Environment(experiment_name=experiment_name,
+<<<<<<< HEAD
+                      enemies=[8],
+=======
                       enemies=[1],
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
                       multiplemode='no',
                       playermode="ai",
                       player_controller=player_controller(iNum_of_neurons),
@@ -90,7 +102,6 @@ def survivor_selection(current_pop, total_offspring, p_new=0.3):
 
     # Combine the selected individuals from both the current population and the offspring
     new_population = np.concatenate((individuals_to_keep, new_individuals), axis=0)
-
     return new_population
 
 def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, p_mutation=0.1, mutation_rate=float):
@@ -131,8 +142,13 @@ def crossover(pop, fixed_start=True, fixed_end=True, n_offspring=2, p_left=0.5, 
             
             total_offspring = np.vstack((total_offspring, offspring[c]))
 
+<<<<<<< HEAD
+    return total_offspring
+    # return survivor_selection(pop, total_offspring)
+=======
     # return total_offspring
     return survivor_selection(pop, total_offspring)
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
 
 def print_generational_gain(history):
     ''' 
@@ -168,7 +184,11 @@ def main():
     initial_mutation_rate = 5
     final_mutation_rate = 0.001
     mutation_rates = initial_mutation_rate * np.exp(np.linspace(0, np.log(final_mutation_rate / initial_mutation_rate), generations))
+<<<<<<< HEAD
+    np.random.seed(124)
+=======
     np.random.seed(1234)
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
 
     env = init_simulation(hidden_neurons)
     number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5

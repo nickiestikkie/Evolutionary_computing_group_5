@@ -48,6 +48,65 @@ save logs: yes
 
 ########## Simulation state - END ###########
 
+<<<<<<< HEAD
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+
+MESSAGE: state has been saved to files.
+=======
 PARAMETER CHANGE: enemies = [8]
 
 PARAMETER CHANGE: timeexpire = 3000
@@ -85,6 +144,7 @@ PARAMETER CHANGE: logs = on
 PARAMETER CHANGE: savelogs = yes
 
 MESSAGE: state has been loaded.
+>>>>>>> b48ba23ebf7d3115a1397bbbf08461d40fe00f05
 
 ########## Simulation state - INI ###########
 
