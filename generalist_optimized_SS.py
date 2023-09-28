@@ -1,7 +1,6 @@
 ################################
 # EvoMan FrameWork - V1.0 2016 #
-# Author: Karine Miras         #
-# karine.smiras@gmail.com      #
+# Author: Group 5              #
 ################################
 
 # imports framework
@@ -22,7 +21,8 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'dummy_demo_1'
+experiment_name = 'steady_state_e3'
+
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -46,14 +46,14 @@ def evaluate(x):
 
 def init_population(individuals, number_of_weights, lower_bound, upper_bound):
     # Each row represents an individual and contains 'number_of_weights' random values
-    # These random values are uniformly distributed between 'lower_bound' and 'upper_bound'
+    # These random values are uniformly distributeds between 'lower_bound' and 'upper_bound'
     population = np.random.uniform(lower_bound, upper_bound, (individuals, number_of_weights))
     return population
 
 def init_simulation(iNum_of_neurons):
     global env
     env = Environment(experiment_name=experiment_name,
-                      enemies=[1],
+                      enemies=[3],
                       multiplemode='no',
                       playermode="ai",
                       player_controller=player_controller(iNum_of_neurons),
@@ -186,40 +186,55 @@ def main():
     initial_mutation_rate = 10
     final_mutation_rate = 0.01
     mutation_rates = initial_mutation_rate * np.exp(np.linspace(0, np.log(final_mutation_rate / initial_mutation_rate), generations))
-    np.random.seed(1234)
 
     env = init_simulation(hidden_neurons)
     number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
     population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
     fitness, enemy_life = evaluate(population)
-    
-    # saves results for first population
-    file_aux  = open(experiment_name+'/results.txt','a')
-    file_aux.write('\n\ngen best mean std')
 
-    start_time = time.time() # Start timer (time in seconds)
-    for i in range(generations):
-        # create new gen
-        population, fitness, enemy_life = crossover(population, fitness, enemy_life, mutation_rate=mutation_rates[i], generational_model=generational_model) 
+    for j in range(10):
+    
+        env = init_simulation(hidden_neurons)
+        number_of_weights = (env.get_num_sensors()+1)*hidden_neurons + (hidden_neurons+1)*5
+        population = init_population(individuals, number_of_weights, lower_bound, upper_bound)
+        fitness, enemy_life = evaluate(population)
         
         mean_fitness = np.mean(fitness)
         best_fitness = np.argmax(fitness)
         std_fitness = np.std(fitness)
-        
-        mHistory.append([i, mean_fitness])
-
-        # saves results
+    
         file_aux  = open(experiment_name+'/results.txt','a')
-        print( '\n GENERATION '+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
-        file_aux.write('\n'+str(i)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
+        file_aux.write('\n'+str(0)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
         file_aux.close()
 
-        print(f'enemy life = {np.min(enemy_life)}')
+        start_time = time.time() # Start timer (time in seconds)
+        for i in range(generations):
+            # create new gen
+            population, fitness, enemy_life = crossover(population, fitness, enemy_life, mutation_rate=mutation_rates[i], generational_model=generational_model) 
+        
+            mean_fitness = np.mean(fitness)
+            best_fitness = np.argmax(fitness)
+            std_fitness = np.std(fitness)
+        
+            # mHistory.append([i, mean_fitness])
+
+            # saves results
+            file_aux  = open(experiment_name+'/results.txt','a')
+            print( '\n GENERATION '+str(i+1)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6)))
+            file_aux.write('\n'+str(i+1)+' '+str(round(fitness[best_fitness],6))+' '+str(round(mean_fitness,6))+' '+str(round(std_fitness,6))   )
+            file_aux.close()
+
+            print(f'enemy life = {np.min(enemy_life)}')
+        
+        # save best individual for this run
+        np.savetxt(experiment_name+'/best'+str(j+1)+'.txt', population[best_fitness])
+            
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(elapsed_time)
 
-    print_generational_gain(mHistory)
+    # print_generational_gain(mHistory)
     quit()
 if __name__ == "__main__":
     main()
+    
