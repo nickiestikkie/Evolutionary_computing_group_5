@@ -16,7 +16,6 @@ from math import sqrt
 import random
 import matplotlib.pyplot as plt
 
-# choose this for not using visuals and thus making experiments faster
 headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
