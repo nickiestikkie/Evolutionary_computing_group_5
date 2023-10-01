@@ -18,7 +18,7 @@ import random
 import matplotlib.pyplot as plt
 
 # choose this for not using visuals and thus making experiments faster
-headless = True
+headless = False
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -29,6 +29,7 @@ if not os.path.exists(experiment_name):
 
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
+    print(t,p,e, f)
     return f, e
 
 
@@ -60,8 +61,8 @@ def init_simulation(iNum_of_neurons):
                       player_controller=player_controller(iNum_of_neurons),
                       enemymode="static",
                       level=2,
-                      speed="fastest",
-                      visuals=False)
+                      speed="normal",
+                      visuals=True)
     return env
 
 def parent_selection(population, fitness, num_parents=8):
@@ -223,46 +224,50 @@ def a( individuals = 100, hidden_neurons = 10,lower_bound = -1    ,upper_bound =
 
 def main():
     # magic numbers
-    generational_model = False # if generational_model = False, the steady-state model is applied
-    individuals = 100
-    hidden_neurons = 10
-    lower_bound = -1
-    upper_bound = 1
-    generations = 30
-    stop_time = 3000
-    mHistory = [] # becomes a list of lists
+    # generational_model = False # if generational_model = False, the steady-state model is applied
+    # individuals = 100
+    # hidden_neurons = 10
+    # lower_bound = -1
+    # upper_bound = 1
+    # generations = 30
+    # stop_time = 3000
+    # mHistory = [] # becomes a list of lists
 
-    initial_mutation_rate = 5
-    final_mutation_rate = 0.001
-    p_mutation = 0.1
-    num_parents = 8
-    p_new = 0.3
+    # initial_mutation_rate = 5
+    # final_mutation_rate = 0.001
+    # p_mutation = 0.1
+    # num_parents = 8
+    # p_new = 0.3
+    init_simulation(10)
+    best_genotype =  np.loadtxt("generational_e1/best9.txt")
+    # open("generational_e1/best1.txt", "r").readlines()
+    simulation(env, best_genotype)
 
-    initial_mutation_rate  = [10, 7.5, 5, 2.5, 1] 
-    for el in initial_mutation_rate:
-        a(initial_mutation_rate=el)
-    initial_mutation_rate = 5
+    # initial_mutation_rate  = [10, 7.5, 5, 2.5, 1] 
+    # for el in initial_mutation_rate:
+    #     a(initial_mutation_rate=el)
+    # initial_mutation_rate = 5
 
-    final_mutation_rate =  [0.05, 0.04, 0.03, 0.02, 0.01]
+    # final_mutation_rate =  [0.05, 0.04, 0.03, 0.02, 0.01]
 
-    for el in final_mutation_rate:
-        a(final_mutation_rate=el)
-    final_mutation_rate=0.001
+    # for el in final_mutation_rate:
+    #     a(final_mutation_rate=el)
+    # final_mutation_rate=0.001
 
-    p_mutation =  [0.01, 0.05, 0.10, 0.15, 0.20]
+    # p_mutation =  [0.01, 0.05, 0.10, 0.15, 0.20]
 
-    for el in p_mutation:
-        a(p_mutation=el)
-    p_mutation = 0.1
+    # for el in p_mutation:
+    #     a(p_mutation=el)
+    # p_mutation = 0.1
 
-    num_parents = [5, 6, 7, 8, 9, 10]
-    for el in num_parents:
-        a(num_parents=el)
-    num_parents = 8
+    # num_parents = [5, 6, 7, 8, 9, 10]
+    # for el in num_parents:
+    #     a(num_parents=el)
+    # num_parents = 8
 
-    p_new = [0.1, 0.2, 0.3, 0.4, 0.5]    
-    for el in p_new:
-        a(p_new=el)
+    # p_new = [0.1, 0.2, 0.3, 0.4, 0.5]    
+    # for el in p_new:
+    #     a(p_new=el)
             
   
     
